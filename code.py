@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 25 21:51:41 2023
+
+"""
 import nltk
 import pandas as pd
 from nltk.corpus import stopwords
@@ -6,9 +11,11 @@ from convokit import Corpus, download
 import matplotlib.pyplot as plt
 from collections import Counter
 import ast
+import numpy as np
+import seaborn as sns
 
 # Load the Cornell Movie--Dialogs Corpus
-movie_corpus = Corpus(filename='/Users/adnanchowdhury/Documents/AIT526/term_project/movie-corpus')
+movie_corpus = movie_corpus = Corpus(filename = download("movie-corpus"))
 # movie_corpus = [utterance.text for utterance in movie_corpus.iter_utterances()]
 movie_corpus.print_summary_stats()
 
@@ -31,10 +38,20 @@ for genres in df['meta.genre']:
 genre_freq_df = pd.DataFrame.from_dict(genre_freq, orient='index', columns=['Frequency']).reset_index()
 genre_freq_df.rename(columns={'index': 'Genre'}, inplace=True)
 
-# Display the genre frequencies
-print(genre_freq_df)
+# Display the movie frequencies with seaborn
+sns.countplot(data = df, y = "meta.movie_name", order = df['meta.movie_name'].value_counts().iloc[:10].index)
 
+# Change numeric values to actual numbers
 
+df['meta.rating'] = pd.to_numeric(df['meta.rating'])
+
+df['meta.votes'] = pd.to_numeric(df['meta.votes'])
+
+# Get a scatterplot between ratings and votes
+grouped_df = df.groupby(['meta.movie_name'],
+                        as_index = False)['meta.rating', 'meta.votes'].apply(lambda x: np.unique(x.values.ravel()).tolist())
+
+# sns.scatterplot(data = grouped_df, x = "meta.rating", y = "meta.votes")
 
 # # Get dataframe head
 # print(convo_df.head())
