@@ -51,7 +51,10 @@ df['meta.votes'] = pd.to_numeric(df['meta.votes'])
 grouped_df = df.groupby(['meta.movie_name'],
                         as_index = False)['meta.rating', 'meta.votes'].apply(lambda x: np.unique(x.values.ravel()).tolist())
 
-# sns.scatterplot(data = grouped_df, x = "meta.rating", y = "meta.votes")
+grouped_df.reset_index(inplace = True)
+
+plt.scatter(x = grouped_df['meta.rating'], y = grouped_df['meta.votes'], s = 1.5)
+plt.show()
 
 # # Get dataframe head
 # print(convo_df.head())
