@@ -13,6 +13,8 @@ from collections import Counter
 import ast
 import numpy as np
 import seaborn as sns
+from textblob import TextBlob
+from nltk import ngrams
 
 # Load the Cornell Movie--Dialogs Corpus
 movie_corpus = movie_corpus = Corpus(filename = download("movie-corpus"))
@@ -96,3 +98,45 @@ plt.show()
 # plt.xticks(rotation=45)
 # plt.tight_layout()
 # plt.show()
+
+# Perform sentiment analysis on each of the categories
+
+# Get the utterances dataframe
+df2 = movie_corpus.get_utterances_dataframe()
+
+# Get the corpus that we will be using for the sentiment analysis
+movie_corpus = [utterance.text for utterance in movie_corpus.iter_utterances()]
+
+#  Stop words
+stop_words = set(stopwords.words('english'))
+
+# Tokenize and clean the movie corpus
+movie_words = [word for word in nltk.word_tokenize(' '.join(movie_corpus)) if word.isalnum() and word not in stop_words]
+
+# Create two empty lists to store the values
+text_list = []
+Sentiment_list = []
+
+for text in movie_corpus:
+    text_list.append(text)
+    Sentiment_list.append(TextBlob(text).sentiment.polarity)
+    
+sent_df = pd.DataFrame(
+    {
+     'text' : text_list,
+     'Sentiment' : Sentiment_list
+     }
+    )
+
+# Filter where sentiment is 0 as we are not going to take those values into consideration
+sent_df = sent_df[sent_df['Sentiment'] != 0]
+
+# Drop duplicates for top and bottom 20
+sentiment_graph = sent_df.drop_duplicates()
+# Sort the dataframe
+sentiment_graph.sort_values(by = ['Sentiment'], inplace = True)
+
+# N-grams, we will go with 4-grams for a test
+n_grams = ngrams(movie_words, 4)
+four_grams = [' '.join(grams) for grams in n_grams]
+print(four_grams[1:50])
