@@ -19,3 +19,13 @@ You can install these libraries using pip:
 
 ```bash
 pip install nltk pandas convokit matplotlib textblob wordcloud seaborn
+
+
+## Usage
+
+The provided code allows you to perform the following tasks:
+
+- Load the Cornell Movie--Dialogs Corpus and analyze movie dialogues.
+- Conduct sentiment analysis on the movie corpus using TextBlob.
+- Compare word frequencies between movie scripts and everyday language.
+- Visualize distinct words and their frequencies in movie scripts.
