@@ -56,6 +56,11 @@ df['meta.rating'] = pd.to_numeric(df['meta.rating'])
 
 df['meta.votes'] = pd.to_numeric(df['meta.votes'])
 
+# Get the reference list of movie names and movie ids that are not in the second dataframe
+ref_list = df[['meta.movie_idx', 
+               'meta.movie_name',
+               'meta.rating']].drop_duplicates().reset_index().drop(columns = 'id')
+
 # Get the utterances dataframe
 df2 = movie_corpus.get_utterances_dataframe()
 
@@ -91,6 +96,36 @@ sentiment_graph = sent_df.drop_duplicates()
 # Sort the dataframe
 sentiment_graph.sort_values(by = ['Sentiment'], inplace = True)
 
+# Join the first df to the second df by just referencing text to movie id
+text_ref = df2[['meta.movie_id', 
+                'text']].drop_duplicates().reset_index().drop(columns = 'id')
+
+## Movie name to text reference
+
+final_ref = ref_list.merge(text_ref, left_on = 'meta.movie_idx', right_on = 'meta.movie_id')
+
+# Drop the second movie_id
+final_ref.drop(columns = 'meta.movie_id', inplace = True)
+
+# Join the sentiment graph
+
+f_sentiment_graph = sentiment_graph.merge(final_ref, on = 'text')
+
+# Filter the sentiment graphs for 0.95 positive and -0.95 negative
+# There are the same guidelines as the wordclouds
+f_sentiment_graph_pos = f_sentiment_graph[f_sentiment_graph['Sentiment'] >= 0.95]
+
+# Plot the scatterplot
+sns.scatterplot(data = f_sentiment_graph_pos, x = 'meta.rating',
+                y = 'Sentiment')
+
+# Now the negative
+f_sentiment_graph_neg = f_sentiment_graph[f_sentiment_graph['Sentiment'] <= -0.95]
+
+# Plot the scatterplot
+sns.scatterplot(data = f_sentiment_graph_neg, x = 'meta.rating',
+                y = 'Sentiment')
+
 # Set seed
 random.seed(25)
 
@@ -114,7 +149,7 @@ print(eight_grams[1:50])
 # Generate the positive sentiment wordcloud
 wordcloud = WordCloud()
 
-pos_sent_w_df = sent_df[sent_df['Sentiment'] <= 0.95]
+pos_sent_w_df = sent_df[sent_df['Sentiment'] >= 0.95]
 pos_sent_w = pos_sent_w_df['text']
 wordcloud.generate(' '.join(pos_sent_w))
 
@@ -126,9 +161,9 @@ plt.show()
 # Generate the negative sentiment wordcloud
 wordcloud = WordCloud()
 
-neg_sent_w_df = sent_df[sent_df['Sentiment'] >= -0.95]
+neg_sent_w_df = sent_df[sent_df['Sentiment'] <= -0.95]
 neg_sent_w = neg_sent_w_df['text']
-wordcloud.generate(' '.join(pos_sent_w))
+wordcloud.generate(' '.join(neg_sent_w))
 
 # Display the positive wordcloud
 plt.imshow(wordcloud)
